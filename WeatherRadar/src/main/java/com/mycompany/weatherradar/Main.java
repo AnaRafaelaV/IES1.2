@@ -26,9 +26,20 @@ public class Main {
             .addConverterFactory(GsonConverterFactory. create ())
             .build();
         IpmaService service = retrofit.create(IpmaService.class);
-        int CITY_ID = Integer.parseInt(args[0]);
-        Call<IpmaCityForecast> callSync = service.getForecastForACity( CITY_ID );
-        try {
+        GetCityService cityService = retrofit.create(GetCityService.class);
+        String city = args[0];
+        Call<City> callSyncCity = cityService.getCity();
+        try{
+            int city_id = 0;
+            Response<City> response = callSyncCity.execute();
+            City forecastCity = response.body();
+            for(CityDetails x : forecastCity.getData()){
+                if( city.equals(x.getLocal())){
+                    city_id = x.getGlobalIdLocal();              
+                }
+            }
+            System.out.println(city_id);
+            Call<IpmaCityForecast> callSync = service.getForecastForACity( city_id );
             Response<IpmaCityForecast> apiResponse = callSync.execute();
             IpmaCityForecast forecast = apiResponse.body();
             System. out .println( "max temp for today: " + forecast.getData().
